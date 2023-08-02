@@ -1,0 +1,8 @@
+secret:
+  id:
+  key:
+domain: mem.ac
+subdomain:
+  - lab
+  - '*.lab'
+keyword: '本地连接'
