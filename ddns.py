@@ -1,3 +1,5 @@
+import argparse
+import os
 import json
 import yaml
 from os import path, popen
@@ -7,12 +9,8 @@ from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
 from tencentcloud.dnspod.v20210323 import dnspod_client, models
 
-config_dir = path.join(path.dirname(__file__), './config.yml')
-with open(config_dir, 'r+', encoding='utf8') as file:
-    config_text = file.read()
-    config = yaml.load(config_text, Loader=yaml.SafeLoader)
-    file.close()
-print('config:', config)
+config = {}
+cache_dir = ''
 
 
 def DescribeRecordList(params):
@@ -48,6 +46,7 @@ def ModifyRecord(params):
 
 
 def update(host_ip):
+    print('update:', host_ip)
     record_list = DescribeRecordList({"Domain": config['domain']})['RecordList']
     for record in record_list:
         if record['Name'] in config['subdomain']:
@@ -65,7 +64,6 @@ def update(host_ip):
 
 
 def get_cache():
-    cache_dir = path.join(path.dirname(__file__), './cache.txt')
     if not path.exists(cache_dir):
         return ''
     with open(cache_dir, 'r+', encoding='utf8') as file:
@@ -73,7 +71,6 @@ def get_cache():
 
 
 def set_cache(new_cache):
-    cache_dir = path.join(path.dirname(__file__), './cache.txt')
     with open(cache_dir, 'w+', encoding='utf8') as file:
         file.write(new_cache)
 
@@ -94,8 +91,31 @@ def get_host_ip():
     return ''
 
 
+def load_config():
+    global config, cache_dir
+    parser = argparse.ArgumentParser(description='Process some configurations.')
+    parser.add_argument('-c', '--config', help='Specify the location of the configuration file.', default='config.yml')
+    args = parser.parse_args()
+
+    config_dir = args.config if os.path.isabs(args.config) else os.path.join(os.getcwd(), args.config)
+    if not os.path.exists(config_dir):
+        print('config.yml not found!')
+        input('Press Enter to exit...')
+        return
+
+    cache_dir = os.path.abspath(os.path.join(os.path.dirname(config_dir), './cache.txt'))
+    with open(config_dir, 'r+', encoding='utf8') as file:
+        config_text = file.read()
+        config = yaml.load(config_text, Loader=yaml.SafeLoader)
+        file.close()
+    print('config:', config)
+
+
 if __name__ == '__main__':
+    load_config()
     host_ip = get_host_ip()
     if host_ip != get_cache():
-        set_cache(host_ip)
         update(host_ip)
+        set_cache(host_ip)
+    else:
+        print('Cache hit, skipped!')
