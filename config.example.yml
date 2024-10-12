@@ -1,8 +1,8 @@
 secret:
   id:
   key:
-domain: mem.ac
-subdomain:
-  - lab
-  - '*.lab'
-keyword: '本地连接'
+region: cn-hangzhou-k
+record: 123456789987654321
+domain: jerryhzy.top
+subdomain: desktop
+keyword: '我的连接'
