@@ -75,7 +75,7 @@ def update(
 	client = create_client(config['region'], config['secret']['id'], config['secret']['key'])
 	update_domain_record_request = dns_models.UpdateDomainRecordRequest(
 		record_id = config['record'],
-		rr = config['subdomain'],
+		rr = config['subdomain'][0],
 		type = 'A',
 		value = host_ip
 	)
